@@ -15,10 +15,11 @@ const handle = app.getRequestHandler();
 
 const { SHOPIFY_API_SECRET_KEY, SHOPIFY_API_KEY } = process.env;
 
-app.prepare().then(()=>{
+app.prepare().then(() => {
   const server = new Koa();
-  server.use(session({ secure: true, sameSite: 'none'}, server))
+  server.use(session({ secure: true, sameSite: 'none' }, server));
   server.keys = [SHOPIFY_API_SECRET_KEY];
+
   server.use(
     createShopifyAuth({
       apiKey: SHOPIFY_API_KEY,
@@ -26,21 +27,21 @@ app.prepare().then(()=>{
       scopes: ['read_products'],
       afterAuth(ctx) {
         const { shop, accessToken } = ctx.session;
+
         ctx.redirect('/');
       },
-    }),
+    })
   );
 
   server.use(verifyRequest());
-  server.use(async(ctx)=>{
+  server.use(async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
     return
   });
 
-  server.listen(port, ()=>{
+  server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
-
 });
